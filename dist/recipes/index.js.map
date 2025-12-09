@@ -1,1 +1,0 @@
-{"version":3,"file":"index.js","sourceRoot":"","sources":["../../src/recipes/index.ts"],"names":[],"mappings":"AAAA;;;;GAIG;AAEH,OAAO,EAAC,iBAAiB,EAAC,MAAM,wBAAwB,CAAC;AACzD,OAAO,EAAC,2BAA2B,EAAC,MAAM,kCAAkC,CAAC;AAE7E,+BAA+B;AAC/B,OAAO,EAAC,iBAAiB,EAAE,2BAA2B,EAAC,CAAC;AAExD;;GAEG;AACH,MAAM,CAAC,MAAM,kBAAkB,GAAG;IAC9B,iBAAiB;IACjB,2BAA2B;CAC9B,CAAC"}
