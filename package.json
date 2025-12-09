@@ -1,0 +1,39 @@
+{
+  "name": "@cube/meaning.core",
+  "version": "0.1.0",
+  "description": "Meaning Dimension - Semantic similarity via embeddings for cube queries",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "build:src": "tsc --build tsconfig.src.json",
+    "build:test": "tsc --build tsconfig.test.json",
+    "watch": "tsc --watch",
+    "test": "npm run build && npx mocha test/build/**/*-test.js --exit",
+    "clean": "rm -rf src/**/*.js test/**/*.js test/build dist"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./recipes/*": "./dist/recipes/*",
+    "./types/*": "./dist/types/*",
+    "./vector-index/*": "./dist/vector-index/*"
+  },
+  "author": "cube.core Team",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {
+    "@types/chai": "^4.3.0",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^20.0.0",
+    "chai": "^4.3.0",
+    "mocha": "^10.2.0",
+    "source-map-support": "^0.5.21",
+    "typescript": "^5.7.2"
+  },
+  "mocha": {
+    "require": [
+      "source-map-support/register"
+    ],
+    "enable-source-maps": true
+  }
+}
