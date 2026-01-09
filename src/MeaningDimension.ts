@@ -11,7 +11,6 @@
 
 import type {SHA256Hash} from '@refinio/one.core/lib/util/type-checks.js';
 import {storeUnversionedObject, getObject} from '@refinio/one.core/lib/storage-unversioned-objects.js';
-import {addRecipeToRuntime} from '@refinio/one.core/lib/object-recipes.js';
 import {getAllEntries} from '@refinio/one.core/lib/reverse-map-query.js';
 
 import type {
@@ -30,7 +29,6 @@ import {
     validateModelCompatibility,
     DEFAULT_HNSW_CONFIG
 } from './types/MeaningTypes.js';
-import {MeaningNodeRecipe, MeaningDimensionValueRecipe} from './recipes/index.js';
 import {HNSWIndex} from './vector-index/HNSWIndex.js';
 
 /**
@@ -92,9 +90,7 @@ export class MeaningDimension {
     async init(): Promise<void> {
         if (this.initialized) return;
 
-        // Register recipes
-        addRecipeToRuntime(MeaningNodeRecipe);
-        addRecipeToRuntime(MeaningDimensionValueRecipe);
+        // Recipes are registered at startup via CoreInstanceInitializationPlan
 
         // Create the "meaning" Dimension object
         const dimension = {
