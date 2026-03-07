@@ -14,16 +14,16 @@
  */
 
 // Export recipes
-export * from './recipes/index';
+export * from './recipes/index.js';
 
 // Export types
-export * from './types/MeaningTypes';
+export * from './types/MeaningTypes.js';
 
 // Export main API
-export {Meaning} from './Meaning';
+export {Meaning} from './Meaning.js';
 
 // Export legacy MeaningDimension (deprecated - use Meaning + SemanticDimension from cube.core)
-export {MeaningDimension, type MeaningDimensionConfig} from './MeaningDimension';
+export {MeaningDimension, type MeaningDimensionConfig} from './MeaningDimension.js';
 
 // Export HNSW index (used by cube.core's SemanticDimension)
-export {HNSWIndex, type HNSWSearchResult} from './vector-index/HNSWIndex';
+export {HNSWIndex, type HNSWSearchResult} from './vector-index/HNSWIndex.js';

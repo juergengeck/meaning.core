@@ -4,8 +4,8 @@
  * Export all meaning.core recipes for registration with ONE.core
  */
 
-import {MeaningNodeRecipe} from './MeaningNodeRecipe';
-import {MeaningDimensionValueRecipe} from './MeaningDimensionValueRecipe';
+import {MeaningNodeRecipe} from './MeaningNodeRecipe.js';
+import {MeaningDimensionValueRecipe} from './MeaningDimensionValueRecipe.js';
 
 // Re-export individual recipes
 export {MeaningNodeRecipe, MeaningDimensionValueRecipe};

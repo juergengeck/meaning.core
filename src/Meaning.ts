@@ -10,8 +10,8 @@
  * - SemanticDimension (cube.core): HNSW indexing and similarity search
  */
 
-import type { EmbeddingProvider } from './types/MeaningTypes';
-import { EMBEDDING_DIMENSIONS, validateEmbedding } from './types/MeaningTypes';
+import type {EmbeddingProvider} from './types/MeaningTypes.js';
+import {EMBEDDING_DIMENSIONS, validateEmbedding} from './types/MeaningTypes.js';
 
 /**
  * Meaning - Embedding generation service

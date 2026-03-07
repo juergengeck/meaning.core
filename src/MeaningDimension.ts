@@ -21,14 +21,14 @@ import type {
     EmbeddingProvider,
     DistanceMetric,
     HNSWConfig
-} from './types/MeaningTypes';
+} from './types/MeaningTypes.js';
 import {
     EMBEDDING_MODEL,
     EMBEDDING_DIMENSIONS,
     validateEmbedding,
     DEFAULT_HNSW_CONFIG
-} from './types/MeaningTypes';
-import {HNSWIndex} from './vector-index/HNSWIndex';
+} from './types/MeaningTypes.js';
+import {HNSWIndex} from './vector-index/HNSWIndex.js';
 
 /**
  * Configuration for MeaningDimension
