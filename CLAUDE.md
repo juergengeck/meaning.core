@@ -14,8 +14,8 @@ Meaning is a dimension like time or space - "closeness in meaning space."
 
 | Dimension | Package | Value Type | Index Structure | Query Type |
 |-----------|---------|------------|-----------------|------------|
-| when | time.core | timestamp | Sparse temporal tree | Range |
-| where | space.core | coordinates | Geohash hierarchy | Proximity |
+| when | cube.time | timestamp | Sparse temporal tree | Range |
+| where | cube.space | coordinates | Geohash hierarchy | Proximity |
 | who | someone.core | person hash | Reverse maps | Equals |
 | **meaning** | **meaning.core** | **embedding** | **HNSW graph** | **Similarity** |
 
@@ -145,7 +145,7 @@ const results = await meaning.queryByText('similar content', 10, 0.7);
 
 ```typescript
 import { CubeStorage } from '@cube/cube.core';
-import { TimeDimension } from '@cube/time.core';
+import { TimeDimension } from '@cube/cube.time';
 import { MeaningDimension } from '@cube/meaning.core';
 
 const cube = new CubeStorage({
@@ -264,13 +264,13 @@ ln -s ../../one.core one.core
 ln -s ../../one.models one.models
 
 # Build
-npm install
-npm run build
+pnpm install
+pnpm build
 ```
 
 ## Related Documentation
 
 - `../cube.core/CLAUDE.md` - Main cube orchestration
-- `../time.core/CLAUDE.md` - Time dimension pattern
-- `../space.core/CLAUDE.md` - Space dimension pattern
+- `../cube.time/CLAUDE.md` - Time dimension pattern
+- `../cube.space/CLAUDE.md` - Space dimension pattern
 - `../../specs/001-cube/data-model.md` - Complete data model

@@ -19,16 +19,17 @@ import type {SHA256Hash} from '@refinio/one.core/lib/util/type-checks.js';
  * indexing for efficient similarity search.
  *
  * The embedding vector IS the position in meaning space.
+ * All embeddings use the standard model (nomic-embed-text-v1.5, 768 dims).
  */
 export interface MeaningNode {
     $type$: 'MeaningNode';
-    /** The embedding vector - position in semantic space */
+    /** The embedding vector - position in semantic space (768 dimensions) */
     embedding: number[];
-    /** Embedding model used (for compatibility checking) */
-    model: EmbeddingModel;
+    /** Embedding model identifier - required for compatibility validation */
+    model: string;
     /** Dimensionality of the embedding */
     dimensions: number;
-    /** Optional: source text that was embedded (for re-embedding on model change) */
+    /** Optional: source text that was embedded */
     sourceText?: string;
     /** Optional: content type hint */
     contentType?: 'text' | 'image' | 'audio' | 'multimodal';
@@ -50,56 +51,29 @@ export interface MeaningDimensionValue {
 }
 
 // ============================================================================
-// Embedding Models
+// Embedding Model - Single Standardized Model
 // ============================================================================
 
 /**
- * Supported embedding models
+ * Standard embedding model for all LAMA embeddings
  *
- * Model choice affects:
- * - Embedding dimensionality
- * - Semantic quality
- * - Compatibility (can't compare embeddings from different models)
+ * We standardize on a single model to ensure:
+ * - All embeddings are comparable across the ecosystem
+ * - Embeddings can be shared between instances
+ * - No model compatibility issues
+ *
+ * Providers:
+ * - Ollama (desktop): uses 'nomic-embed-text' model name
+ * - ONNX (mobile/offline): bundled model for devices without Ollama
  */
-export type EmbeddingModel =
-    | 'text-embedding-3-small'   // OpenAI, 1536 dims
-    | 'text-embedding-3-large'   // OpenAI, 3072 dims
-    | 'text-embedding-ada-002'   // OpenAI legacy, 1536 dims
-    | 'all-MiniLM-L6-v2'         // Sentence Transformers, 384 dims
-    | 'all-mpnet-base-v2'        // Sentence Transformers, 768 dims
-    | 'bge-small-en-v1.5'        // BAAI, 384 dims
-    | 'bge-base-en-v1.5'         // BAAI, 768 dims
-    | 'bge-large-en-v1.5'        // BAAI, 1024 dims
-    | 'nomic-embed-text'         // Ollama default name, 768 dims
-    | 'nomic-embed-text-v1.5'    // Nomic, 768 dims
-    | 'custom';                   // User-provided model
+export const EMBEDDING_MODEL = 'nomic-embed-text-v1.5' as const;
+export const EMBEDDING_DIMENSIONS = 768;
+export const EMBEDDING_MAX_TOKENS = 8192;
 
 /**
- * Model metadata for validation and compatibility
+ * Type alias for embedding model (single value for type safety)
  */
-export interface EmbeddingModelInfo {
-    name: EmbeddingModel;
-    dimensions: number;
-    maxTokens: number;
-    provider: 'openai' | 'huggingface' | 'local' | 'custom';
-}
-
-/**
- * Known model configurations
- */
-export const EMBEDDING_MODELS: Record<EmbeddingModel, EmbeddingModelInfo> = {
-    'text-embedding-3-small': {name: 'text-embedding-3-small', dimensions: 1536, maxTokens: 8191, provider: 'openai'},
-    'text-embedding-3-large': {name: 'text-embedding-3-large', dimensions: 3072, maxTokens: 8191, provider: 'openai'},
-    'text-embedding-ada-002': {name: 'text-embedding-ada-002', dimensions: 1536, maxTokens: 8191, provider: 'openai'},
-    'all-MiniLM-L6-v2': {name: 'all-MiniLM-L6-v2', dimensions: 384, maxTokens: 512, provider: 'huggingface'},
-    'all-mpnet-base-v2': {name: 'all-mpnet-base-v2', dimensions: 768, maxTokens: 512, provider: 'huggingface'},
-    'bge-small-en-v1.5': {name: 'bge-small-en-v1.5', dimensions: 384, maxTokens: 512, provider: 'huggingface'},
-    'bge-base-en-v1.5': {name: 'bge-base-en-v1.5', dimensions: 768, maxTokens: 512, provider: 'huggingface'},
-    'bge-large-en-v1.5': {name: 'bge-large-en-v1.5', dimensions: 1024, maxTokens: 512, provider: 'huggingface'},
-    'nomic-embed-text': {name: 'nomic-embed-text', dimensions: 768, maxTokens: 8192, provider: 'local'},
-    'nomic-embed-text-v1.5': {name: 'nomic-embed-text-v1.5', dimensions: 768, maxTokens: 8192, provider: 'huggingface'},
-    'custom': {name: 'custom', dimensions: 0, maxTokens: 0, provider: 'custom'}
-};
+export type EmbeddingModel = typeof EMBEDDING_MODEL;
 
 // ============================================================================
 // Distance Metrics
@@ -199,16 +173,13 @@ export interface MeaningQueryResult {
 // ============================================================================
 
 /**
- * Interface for embedding providers (OpenAI, local models, etc.)
+ * Interface for embedding providers (Ollama, ONNX, etc.)
  *
  * Implementations handle the actual embedding generation.
- * meaning.core is agnostic to which provider is used.
+ * All providers use the standard embedding model (nomic-embed-text-v1.5).
  */
 export interface EmbeddingProvider {
-    /** Model this provider uses */
-    readonly model: EmbeddingModel;
-
-    /** Generate embedding for text */
+    /** Generate embedding for text (returns 768-dim vector) */
     embed(text: string): Promise<number[]>;
 
     /** Generate embeddings for multiple texts (batch) */
@@ -267,14 +238,3 @@ export function validateEmbedding(embedding: number[], expectedDimensions?: numb
     }
 }
 
-/**
- * Validate model compatibility between two embeddings
- */
-export function validateModelCompatibility(modelA: EmbeddingModel, modelB: EmbeddingModel): void {
-    if (modelA !== modelB) {
-        throw new Error(
-            `Cannot compare embeddings from different models: ${modelA} vs ${modelB}. ` +
-            `Embeddings must use the same model for meaningful comparison.`
-        );
-    }
-}

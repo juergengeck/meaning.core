@@ -18,27 +18,24 @@ import type {
     MeaningDimensionValue,
     MeaningCriterion,
     MeaningQueryResult,
-    EmbeddingModel,
     EmbeddingProvider,
     DistanceMetric,
     HNSWConfig
-} from './types/MeaningTypes.js';
+} from './types/MeaningTypes';
 import {
-    EMBEDDING_MODELS,
+    EMBEDDING_MODEL,
+    EMBEDDING_DIMENSIONS,
     validateEmbedding,
-    validateModelCompatibility,
     DEFAULT_HNSW_CONFIG
-} from './types/MeaningTypes.js';
-import {HNSWIndex} from './vector-index/HNSWIndex.js';
+} from './types/MeaningTypes';
+import {HNSWIndex} from './vector-index/HNSWIndex';
 
 /**
  * Configuration for MeaningDimension
+ *
+ * All dimensions use the standard embedding model (nomic-embed-text-v1.5, 768 dims).
  */
 export interface MeaningDimensionConfig {
-    /** Embedding model to use */
-    model: EmbeddingModel;
-    /** Custom dimensions if model is 'custom' */
-    customDimensions?: number;
     /** Distance metric for similarity */
     metric?: DistanceMetric;
     /** HNSW index configuration */
@@ -51,34 +48,22 @@ export interface MeaningDimensionConfig {
  * MeaningDimension - Semantic dimension implementation
  *
  * Implements DimensionInstance interface for cube.core integration.
+ * Uses the standard embedding model (nomic-embed-text-v1.5, 768 dimensions).
  */
 export class MeaningDimension {
     private dimensionHash?: SHA256Hash;
     private initialized = false;
     private index: HNSWIndex;
-    private readonly model: EmbeddingModel;
-    private readonly dimensions: number;
     private readonly metric: DistanceMetric;
     private readonly embeddingProvider?: EmbeddingProvider;
 
-    constructor(config: MeaningDimensionConfig) {
-        this.model = config.model;
+    constructor(config: MeaningDimensionConfig = {}) {
         this.metric = config.metric ?? 'cosine';
         this.embeddingProvider = config.embeddingProvider;
 
-        // Determine dimensions
-        if (config.model === 'custom') {
-            if (!config.customDimensions) {
-                throw new Error('customDimensions required when model is "custom"');
-            }
-            this.dimensions = config.customDimensions;
-        } else {
-            this.dimensions = EMBEDDING_MODELS[config.model].dimensions;
-        }
-
-        // Initialize HNSW index
+        // Initialize HNSW index with standard dimensions (768)
         this.index = new HNSWIndex(
-            this.dimensions,
+            EMBEDDING_DIMENSIONS,
             this.metric,
             config.hnswConfig ?? DEFAULT_HNSW_CONFIG
         );
@@ -125,8 +110,8 @@ export class MeaningDimension {
      * Index an object with an embedding
      *
      * @param objectHash - Hash of the object to index
-     * @param embedding - The embedding vector
-     * @param sourceText - Optional source text (for re-embedding)
+     * @param embedding - The embedding vector (must be 768 dimensions)
+     * @param sourceText - Optional source text
      */
     async indexEmbedding(
         objectHash: SHA256Hash,
@@ -137,15 +122,15 @@ export class MeaningDimension {
             throw new Error('MeaningDimension not initialized. Call init() first.');
         }
 
-        // Validate embedding
-        validateEmbedding(embedding, this.dimensions);
+        // Validate embedding (must be 768 dimensions)
+        validateEmbedding(embedding, EMBEDDING_DIMENSIONS);
 
         // Create MeaningNode
         const meaningNode: MeaningNode = {
             $type$: 'MeaningNode',
             embedding,
-            model: this.model,
-            dimensions: this.dimensions,
+            model: EMBEDDING_MODEL,
+            dimensions: EMBEDDING_DIMENSIONS,
             sourceText,
             contentType: 'text'
         };
@@ -200,7 +185,7 @@ export class MeaningDimension {
             throw new Error('MeaningDimension not initialized. Call init() first.');
         }
 
-        validateEmbedding(criterion.embedding, this.dimensions);
+        validateEmbedding(criterion.embedding, EMBEDDING_DIMENSIONS);
 
         const results = this.index.search(
             criterion.embedding,
@@ -219,7 +204,7 @@ export class MeaningDimension {
             throw new Error('MeaningDimension not initialized. Call init() first.');
         }
 
-        validateEmbedding(criterion.embedding, this.dimensions);
+        validateEmbedding(criterion.embedding, EMBEDDING_DIMENSIONS);
 
         return this.index.search(
             criterion.embedding,
@@ -255,14 +240,14 @@ export class MeaningDimension {
             throw new Error('MeaningDimension not initialized. Call init() first.');
         }
 
-        validateEmbedding(embedding, this.dimensions);
+        validateEmbedding(embedding, EMBEDDING_DIMENSIONS);
 
         // Create MeaningNode (content-addressed, so same embedding = same hash)
         const meaningNode: MeaningNode = {
             $type$: 'MeaningNode',
             embedding,
-            model: this.model,
-            dimensions: this.dimensions
+            model: EMBEDDING_MODEL,
+            dimensions: EMBEDDING_DIMENSIONS
         };
 
         const nodeResult = await storeUnversionedObject(meaningNode);
@@ -280,6 +265,30 @@ export class MeaningDimension {
     }
 
     /**
+     * Generate embedding for text without indexing.
+     * Returns the raw embedding vector for external storage.
+     *
+     * @param text - Text to embed
+     * @returns 768-dimensional embedding vector
+     * @throws Error if no embeddingProvider configured
+     */
+    async generateEmbedding(text: string): Promise<number[]> {
+        if (!this.embeddingProvider) {
+            throw new Error(
+                'No embeddingProvider configured. Cannot generate embeddings.'
+            );
+        }
+        return this.embeddingProvider.embed(text);
+    }
+
+    /**
+     * Check if embedding generation is available
+     */
+    hasEmbeddingProvider(): boolean {
+        return !!this.embeddingProvider;
+    }
+
+    /**
      * Check if an object is already indexed
      */
     isIndexed(objectHash: SHA256Hash): boolean {
@@ -294,17 +303,10 @@ export class MeaningDimension {
     }
 
     /**
-     * Get model info
-     */
-    getModel(): EmbeddingModel {
-        return this.model;
-    }
-
-    /**
-     * Get embedding dimensions
+     * Get embedding dimensions (always 768 for nomic-embed-text-v1.5)
      */
     getDimensions(): number {
-        return this.dimensions;
+        return EMBEDDING_DIMENSIONS;
     }
 
     /**
@@ -344,10 +346,10 @@ export class MeaningDimension {
                     const meaningNode = await getObject(dimValue.meaningNodeHash) as MeaningNode;
                     if (!meaningNode) continue;
 
-                    // Validate model compatibility
-                    if (meaningNode.model !== this.model) {
+                    // Validate embedding dimensions
+                    if (meaningNode.embedding.length !== EMBEDDING_DIMENSIONS) {
                         console.warn(
-                            `Skipping MeaningNode with incompatible model: ${meaningNode.model} vs ${this.model}`
+                            `Skipping MeaningNode with invalid dimensions: ${meaningNode.embedding.length} (expected ${EMBEDDING_DIMENSIONS})`
                         );
                         continue;
                     }

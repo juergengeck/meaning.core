@@ -113,7 +113,7 @@ const results = await meaning.queryByText('fast fox jumping', 10, 0.7);
 
 ```typescript
 import { CubeStorage } from '@cube/cube.core';
-import { TimeDimension } from '@cube/time.core';
+import { TimeDimension } from '@cube/cube.time';
 import { MeaningDimension } from '@cube/meaning.core';
 
 const cube = new CubeStorage({
@@ -538,8 +538,8 @@ npm run clean
 ## Related Packages
 
 - **cube.core** - Main datacube orchestration
-- **time.core** - Temporal dimension (when)
-- **space.core** - Spatial dimension (where)
+- **cube.time** - Temporal dimension (when)
+- **cube.space** - Spatial dimension (where)
 - **someone.core** - Identity dimension (who)
 
 ## License

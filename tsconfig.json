@@ -21,10 +21,7 @@
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "useUnknownInCatchVariables": false,
-    "types": ["node"],
-    "paths": {
-      "@refinio/*": ["./packages/*"]
-    }
+    "types": ["node"]
   },
   "include": [
     "src/**/*",

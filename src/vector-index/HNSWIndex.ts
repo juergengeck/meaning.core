@@ -11,8 +11,17 @@
  */
 
 import type {SHA256Hash} from '@refinio/one.core/lib/util/type-checks.js';
-import type {MeaningNode, HNSWConfig, DistanceMetric} from '../types/MeaningTypes.js';
-import {cosineSimilarity, euclideanDistance, dotProduct, DEFAULT_HNSW_CONFIG} from '../types/MeaningTypes.js';
+import type {
+    MeaningNode,
+    HNSWConfig,
+    DistanceMetric
+} from '../types/MeaningTypes.js';
+import {
+    cosineSimilarity,
+    euclideanDistance,
+    dotProduct,
+    DEFAULT_HNSW_CONFIG
+} from '../types/MeaningTypes.js';
 
 /**
  * Node in the HNSW graph
@@ -253,6 +262,20 @@ export class HNSWIndex {
      */
     getAllObjectHashes(): SHA256Hash[] {
         return Array.from(this.nodes.keys()) as SHA256Hash[];
+    }
+
+    /**
+     * Get the configured dimensions
+     */
+    getDimensions(): number {
+        return this.dimensions;
+    }
+
+    /**
+     * Get the configured metric
+     */
+    getMetric(): DistanceMetric {
+        return this.metric;
     }
 
     /**

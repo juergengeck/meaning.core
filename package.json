@@ -1,8 +1,10 @@
 {
-  "name": "@cube/meaning.core",
+  "name": "@refinio/meaning.core",
   "version": "0.1.0",
   "description": "Meaning Dimension - Semantic similarity via embeddings for cube queries",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "build:src": "tsc --build tsconfig.src.json",
@@ -21,14 +23,18 @@
   "license": "MIT",
   "private": true,
   "dependencies": {},
+  "peerDependencies": {
+    "@refinio/one.core": "workspace:*"
+  },
   "devDependencies": {
-    "@types/chai": "^4.3.0",
-    "@types/mocha": "^10.0.0",
-    "@types/node": "^20.0.0",
-    "chai": "^4.3.0",
-    "mocha": "^10.2.0",
-    "source-map-support": "^0.5.21",
-    "typescript": "^5.7.2"
+    "@refinio/one.core": "workspace:*",
+    "@types/chai": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "chai": "catalog:",
+    "mocha": "catalog:",
+    "source-map-support": "catalog:",
+    "typescript": "catalog:"
   },
   "mocha": {
     "require": [
